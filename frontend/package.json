@@ -8,8 +8,20 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "@luzmo/vue-embed": "^5.0.5",
+    "apexcharts": "^3.49.1",
+    "axios": "^1.7.2",
+    "browserslist": "^4.23.1",
+    "caniuse-lite": "^1.0.30001636",
+    "chart.js": "^4.4.3",
     "core-js": "^3.8.3",
-    "vue": "^3.2.13"
+    "flowbite": "^2.3.0",
+    "ioredis": "^5.4.1",
+    "moment": "^2.30.1",
+    "redis": "^4.6.14",
+    "vue": "^3.2.13",
+    "vue-chartjs": "^5.3.1",
+    "webpack": "^5.92.1"
   },
   "devDependencies": {
     "@babel/core": "^7.12.16",
@@ -17,8 +29,11 @@
     "@vue/cli-plugin-babel": "~5.0.0",
     "@vue/cli-plugin-eslint": "~5.0.0",
     "@vue/cli-service": "~5.0.0",
+    "autoprefixer": "^10.4.19",
     "eslint": "^7.32.0",
-    "eslint-plugin-vue": "^8.0.3"
+    "eslint-plugin-vue": "^8.0.3",
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.4"
   },
   "eslintConfig": {
     "root": true,
