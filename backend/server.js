@@ -1,12 +1,11 @@
 const express = require('express');
 const { z } = require('zod');
 const cors = require('cors');
-const { createClient } = require('redis');
 
 const getRankAndBuyBoxTrends = require('./helper/getRankAndBuyBoxTrends');
 const getStock = require('./helper/getStock');
 const generateSummary = require('./openai/generateSummary');
-
+const createRedisClient = require('./redis/redis-client');
 
 require('dotenv').config();
 
@@ -14,20 +13,7 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// Redis client config
-let client;
-(async () => {
-    client = createClient();
-    
-    await client.connect();
-
-    client.on("connect", () => console.log("Connected!!!"));
-    client.on("error", (error) => console.error(`Error : ${error}`));
-})();
-
-app.get('/', (req, res) => {
-    res.json({success: true});
-})
+let client = createRedisClient();
 
 app.get('/products/:id', async(req, res) => {
     const asin = req.params.id;
