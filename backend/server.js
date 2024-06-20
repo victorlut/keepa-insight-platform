@@ -9,38 +9,54 @@ const createRedisClient = require('./redis/redis-client');
 
 require('dotenv').config();
 
+const ASINSchema = z.string().regex(/^[A-Z0-9]{10}$/);
+const EAN_UPC_Schema = z.string().regex(/^\d{12,13}$/);
+
+
 const app = express();
 app.use(express.json());
 app.use(cors());
 
 let client = createRedisClient();
 
-app.get('/products/:id', async(req, res) => {
-    const asin = req.params.id;
+app.get('/', (req, res) => {
+    res.json({success: true});
+})
+
+app.get('/products/:type/:id', async(req, res) => {
+    const type = req.params.type;
+    const code = req.params.id;
+    console.log(type + ' ' + code);
     try{
-       const data = await client.get(asin);
-       if(data) {
-            console.log('Data is cached in Redis');
-            const p = JSON.parse(data);
-            res.json({
-                ...p,
-                success: true,
-                isCache: true
-            });
-       }
+       const data = await client.get(code);
+        if(data) {
+                console.log('Data is cached in Redis');
+                const p = JSON.parse(data);
+                res.json({
+                    ...p,
+                    success: true,
+                    isCache: true
+                });
+        }
        else {
             console.log('Data is not cached in Redis!');
-            if(!asin) {
+            if(!code) {
                 return res.json({
                     success: false,
                     msg: "Please input the code"
                 });
             }
             // Validate the product ID
-            const productSchema = z.object({
-                asin: z.string().regex(/^[A-Z0-9]{10}$/), // validate ASIN
-            });
-            const validateID = await productSchema.safeParse({ asin });
+            
+            let validateID, keepa_url = "https://api.keepa.com/product?key=" + process.env.KEEPA_API_KEY + "&domain=" + process.env.DOMAIN;
+            if (type.includes('ASIN')) {
+                validateID = await ASINSchema.safeParse(code);
+                keepa_url += "&asin=" + code + "&stats=180&buybox=1&stock=1";
+            } 
+            else {
+                validateID = await EAN_UPC_Schema.safeParse(code);
+                keepa_url += "&code=" + code + "&stats=180&buybox=1&stock=1";
+            }
             if(!validateID.success) {
                 return res.json({
                     success: false,
@@ -49,7 +65,7 @@ app.get('/products/:id', async(req, res) => {
             }
 
             // Send request to Keepa
-            const response = await fetch("https://api.keepa.com/product?key=" + process.env.KEEPA_API_KEY + "&domain=" + process.env.DOMAIN + "&asin=" + asin + "&stats=180&buybox=1&stock=1");
+            const response = await fetch(keepa_url);
             const product = await response.json();
 
             const { products } = product;
@@ -72,7 +88,7 @@ app.get('/products/:id', async(req, res) => {
             const buyBoxInfo = `The buy box price has ${getRankAndBuyBoxTrends(products[0].stats.avg90)} moderately over the last 90 days, with noticeable variations between the FBA, FBM, and Amazon prices.`;
 
             const summary = await generateSummary(stockInfo, salesRankInfo, buyBoxInfo);
-            client.set(asin, JSON.stringify({
+            client.set(code, JSON.stringify({
                 product: products[0],
                 sales_rank,
                 summary

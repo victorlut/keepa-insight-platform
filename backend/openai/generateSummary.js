@@ -1,5 +1,5 @@
 module.exports =  async function generateSummary(stockInfo, salesRankInfo, buyBoxInfo) {
-    const prompt = `  
+    const prompt = `  Using the information provided, generate a summary.\\n\\n  
     Stock Information: ${stockInfo} Sales Rank Information: ${salesRankInfo} Buy Box Information: ${buyBoxInfo}`;
     try {
       const response = await fetch(
@@ -8,7 +8,7 @@ module.exports =  async function generateSummary(stockInfo, salesRankInfo, buyBo
             method: 'POST',
             body: JSON.stringify({
                 prompt: prompt,
-                model: "gpt-3.5-turbo-instruct",
+                model: "davinci-002",
                 max_tokens: 150,
                 n: 1,
                 stop: null,
